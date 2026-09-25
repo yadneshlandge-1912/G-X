@@ -1,0 +1,15 @@
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+websockets==12.0
+pyserial==3.5
+python-dotenv==1.0.1
+
+# Pydantic v2 explicitly pinned — FastAPI 0.111 requires v2
+pydantic>=2.0,<3.0
+
+# Testing
+pytest==8.2.0
+pytest-asyncio==0.23.6
+
+# Supabase cloud sync (dual-write — SQLite stays primary, Supabase is the cloud mirror)
+supabase==2.4.3

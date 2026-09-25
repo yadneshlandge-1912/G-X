@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+*.db
+*.db-journal
+.env
+.env.local
+backend/data/*.db
+backend/logs/
+dashboard/.vite/
+*.log
+.DS_Store
+Thumbs.db

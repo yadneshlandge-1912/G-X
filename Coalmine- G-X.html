@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoalMine LoRa+AI Monitoring Platform — MVP v1.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14171c;
+    --bg-panel: #1b1f26;
+    --bg-well: #101317;
+    --text: #e9e6df;
+    --text-dim: #9aa0a6;
+    --text-faint: #676d76;
+    --line: #2b3038;
+    --line-strong: #3a4048;
+    --amber: #f0a63a;
+    --amber-dim: #a9752a;
+    --teal: #52c4b0;
+    --red: #e5646a;
+    --font-sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f2f0ea;
+      --bg-panel: #ffffff;
+      --bg-well: #e8e5dc;
+      --text: #1b1e22;
+      --text-dim: #565c63;
+      --text-faint: #8a8f95;
+      --line: #d8d4c8;
+      --line-strong: #c3beb0;
+      --amber: #b9701d;
+      --amber-dim: #8a5416;
+      --teal: #167e6d;
+      --red: #b8343a;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f2f0ea;
+    --bg-panel: #ffffff;
+    --bg-well: #e8e5dc;
+    --text: #1b1e22;
+    --text-dim: #565c63;
+    --text-faint: #8a8f95;
+    --line: #d8d4c8;
+    --line-strong: #c3beb0;
+    --amber: #b9701d;
+    --amber-dim: #8a5416;
+    --teal: #167e6d;
+    --red: #b8343a;
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171c;
+    --bg-panel: #1b1f26;
+    --bg-well: #101317;
+    --text: #e9e6df;
+    --text-dim: #9aa0a6;
+    --text-faint: #676d76;
+    --line: #2b3038;
+    --line-strong: #3a4048;
+    --amber: #f0a63a;
+    --amber-dim: #a9752a;
+    --teal: #52c4b0;
+    --red: #e5646a;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 28px 120px; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    border-bottom: 1px solid var(--line);
+    padding: 64px 0 40px;
+    position: relative;
+  }
+  .hero-kicker {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--amber);
+    letter-spacing: 0.02em;
+    margin-bottom: 18px;
+  }
+  .hero-kicker::before { content: "● "; }
+  h1.hero-title {
+    font-size: clamp(32px, 5.2vw, 50px);
+    line-height: 1.08;
+    margin: 0 0 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    max-width: 15ch;
+  }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--text-dim);
+    max-width: 58ch;
+    margin: 0 0 28px;
+  }
+  .hero-callout {
+    background: var(--bg-well);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber);
+    padding: 16px 20px;
+    font-size: 15px;
+    color: var(--text);
+    max-width: 62ch;
+  }
+  .hero-callout strong { color: var(--amber); }
+  .hero-stats {
+    display: flex;
+    gap: 36px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+  }
+  .stat .num {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--teal);
+    line-height: 1;
+  }
+  .stat .label {
+    font-size: 13px;
+    color: var(--text-faint);
+    margin-top: 6px;
+  }
+
+  /* ---------- Sections ---------- */
+  section { padding: 56px 0; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: none; }
+  .section-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .section-num { font-family: var(--font-mono); font-size: 13px; color: var(--text-faint); }
+  h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .section-desc { color: var(--text-dim); font-size: 15px; margin: 12px 0 32px; max-width: 62ch; }
+
+  /* ---------- Architecture diagram ---------- */
+  .diagram {
+    background: var(--bg-well);
+    border: 1px solid var(--line);
+    padding: 28px;
+    overflow-x: auto;
+  }
+  .diagram svg { display: block; width: 100%; height: auto; min-width: 640px; }
+  .zone-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    fill: var(--text-faint);
+    letter-spacing: 0.04em;
+  }
+  .box-fill { fill: var(--bg-panel); stroke: var(--line-strong); stroke-width: 1; }
+  .box-fill.accent { stroke: var(--amber); }
+  .box-fill.accent2 { stroke: var(--teal); }
+  .box-text { font-family: var(--font-mono); font-size: 12px; fill: var(--text); }
+  .box-text.dim { fill: var(--text-dim); font-size: 10.5px; }
+  .flow-line { stroke: var(--line-strong); stroke-width: 1.2; fill: none; }
+  .flow-arrow { fill: var(--line-strong); }
+
+  /* ---------- Tables ---------- */
+  table.filetable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  table.filetable th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 11px;
+    color: var(--text-faint);
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  table.filetable td {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.filetable td:first-child {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--teal);
+    white-space: nowrap;
+    padding-right: 20px;
+    width: 34%;
+  }
+  table.filetable td:last-child { color: var(--text-dim); }
+  .filegroup-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--amber);
+    margin: 36px 0 12px;
+    text-transform: none;
+  }
+  .filegroup-title:first-child { margin-top: 0; }
+
+  /* ---------- OLED screens ---------- */
+  .oled-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 8px;
+  }
+  @media (max-width: 720px) { .oled-row { grid-template-columns: repeat(2, 1fr); } }
+  .oled {
+    background: #04140f;
+    border: 3px solid #23262c;
+    border-radius: 3px;
+    padding: 10px 12px;
+    font-family: var(--font-mono);
+    color: #6df0b8;
+    font-size: 11px;
+    line-height: 1.5;
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.5);
+  }
+  .oled .oled-head {
+    color: #6df0b8;
+    opacity: 0.75;
+    border-bottom: 1px solid rgba(109,240,184,0.25);
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+    font-size: 10px;
+    letter-spacing: 0.03em;
+  }
+  .oled .big { font-size: 20px; font-weight: 600; }
+  .oled .bar { letter-spacing: -1px; }
+  .oled-caption {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 8px;
+  }
+  .oled.sos {
+    background: #1a0606;
+    color: #ff8a8a;
+    border-color: #7a1f1f;
+  }
+  .oled.sos .oled-head { color: #ff8a8a; border-color: rgba(255,138,138,0.3); }
+  .oled.sos .big { font-size: 22px; text-align: center; padding-top: 10px; }
+
+  /* ---------- Quick start ---------- */
+  .code-block {
+    background: var(--bg-well);
+    border: 1px solid var(--line);
+    padding: 20px 22px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-block .cmt { color: var(--text-faint); }
+  .code-block .cmd { color: var(--teal); }
+
+  /* ---------- Decision table ---------- */
+  .decision-list { display: flex; flex-direction: column; }
+  .decision-row {
+    display: grid;
+    grid-template-columns: 34% 1fr;
+    gap: 24px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .decision-row:first-child { border-top: 1px solid var(--line); }
+  .decision-constraint { color: var(--text-dim); font-size: 14px; }
+  .decision-solution { font-size: 14px; }
+  .decision-solution .lead { color: var(--amber); font-family: var(--font-mono); font-size: 12px; margin-right: 8px; }
+  @media (max-width: 640px) { .decision-row { grid-template-columns: 1fr; gap: 4px; } }
+
+  /* ---------- Scalability ---------- */
+  .roadmap { border-left: 1px solid var(--line-strong); padding-left: 24px; margin-left: 4px; }
+  .roadmap-item { position: relative; padding-bottom: 26px; }
+  .roadmap-item:last-child { padding-bottom: 0; }
+  .roadmap-item::before {
+    content: "";
+    position: absolute;
+    left: -29px;
+    top: 4px;
+    width: 9px;
+    height: 9px;
+    background: var(--bg);
+    border: 2px solid var(--teal);
+    border-radius: 50%;
+  }
+  .roadmap-item .rm-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .roadmap-item .rm-desc { color: var(--text-dim); font-size: 14px; max-width: 58ch; }
+
+  footer {
+    padding: 40px 0 0;
+    color: var(--text-faint);
+    font-size: 13px;
+    font-family: var(--font-mono);
+  }
+
+  ::selection { background: var(--amber); color: #14171c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-kicker">MVP v1.0 — Underground Mine Safety</div>
+    <h1 class="hero-title">CoalMine LoRa+AI Monitoring Platform</h1>
+    <p class="hero-sub">A miner-safety system built for the constraint that actually matters: most underground coal mines have no mobile signal at all. Everything here runs on LoRa radio and local processing — no SIM, no internet, no cloud dependency.</p>
+    <div class="hero-callout">
+      <strong>70%+</strong> of underground coal mines operate in zero-coverage zones. This system is designed to work fully offline, end to end, from sensor node to dashboard.
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><div class="num">5</div><div class="label">miner nodes per gateway</div></div>
+      <div class="stat"><div class="num">500m+</div><div class="label">LoRa range through rock</div></div>
+      <div class="stat"><div class="num">2</div><div class="label">onboard AI agents</div></div>
+      <div class="stat"><div class="num">72h</div><div class="label">node battery reserve</div></div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture">
+    <div class="section-head"><span class="section-num">01</span><h2>Architecture</h2></div>
+    <p class="section-desc">Sensor readings travel from miner-worn nodes to a surface gateway over LoRa, then through a two-agent backend pipeline before reaching the live dashboard.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 860 420" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" class="flow-arrow"/>
+          </marker>
+        </defs>
+
+        <!-- Underground zone -->
+        <rect x="10" y="10" width="840" height="150" fill="none" stroke="#3a4048" stroke-dasharray="3,4"/>
+        <text x="24" y="30" class="zone-label">UNDERGROUND — ZERO COVERAGE ZONE</text>
+
+        <g>
+          <rect x="30" y="55" width="110" height="34" class="box-fill" rx="2"/>
+          <text x="85" y="76" text-anchor="middle" class="box-text">Node 1</text>
+          <rect x="30" y="97" width="110" height="34" class="box-fill" rx="2"/>
+          <text x="85" y="118" text-anchor="middle" class="box-text">Node 2</text>
+          <rect x="170" y="76" width="110" height="34" class="box-fill" rx="2"/>
+          <text x="225" y="97" text-anchor="middle" class="box-text">Node 3</text>
+          <rect x="30" y="139" width="110" height="0" class="box-fill"/>
+
+          <!-- lines from nodes to gateway -->
+          <path d="M140,72 H300" class="flow-line" marker-end="url(#arrow)"/>
+          <path d="M140,114 H300" class="flow-line" marker-end="url(#arrow)"/>
+          <path d="M280,93 H300" class="flow-line" marker-end="url(#arrow)"/>
+
+          <rect x="310" y="55" width="180" height="80" class="box-fill accent" rx="2"/>
+          <text x="400" y="88" text-anchor="middle" class="box-text">Gateway ESP32</text>
+          <text x="400" y="106" text-anchor="middle" class="box-text dim">LoRa 915MHz · SF12</text>
+          <text x="400" y="120" text-anchor="middle" class="box-text dim">OLED + LED · USB serial ↓</text>
+
+          <text x="220" y="55" text-anchor="middle" class="box-text dim">LoRa · 500m+ range</text>
+        </g>
+
+        <!-- connector down -->
+        <path d="M400,135 V180" class="flow-line" marker-end="url(#arrow)"/>
+
+        <!-- Surface zone -->
+        <rect x="10" y="185" width="840" height="220" fill="none" stroke="#3a4048" stroke-dasharray="3,4"/>
+        <text x="24" y="205" class="zone-label">PIT HEAD / SURFACE — GATEWAY PC</text>
+
+        <rect x="60" y="222" width="740" height="168" class="box-fill" rx="2"/>
+        <text x="80" y="244" class="box-text dim">Backend — Node.js + SQLite</text>
+
+        <rect x="80" y="256" width="130" height="34" class="box-fill accent2" rx="2"/>
+        <text x="145" y="277" text-anchor="middle" class="box-text">SerialBridge</text>
+
+        <path d="M210,273 H260" class="flow-line" marker-end="url(#arrow)"/>
+        <rect x="260" y="256" width="150" height="34" class="box-fill accent2" rx="2"/>
+        <text x="335" y="277" text-anchor="middle" class="box-text">Agent 1 — Signal</text>
+
+        <path d="M410,273 H460" class="flow-line" marker-end="url(#arrow)"/>
+        <rect x="460" y="256" width="160" height="34" class="box-fill accent2" rx="2"/>
+        <text x="540" y="277" text-anchor="middle" class="box-text">Agent 2 — Location</text>
+
+        <path d="M335,290 V310" class="flow-line" marker-end="url(#arrow)"/>
+        <rect x="260" y="310" width="150" height="30" class="box-fill" rx="2"/>
+        <text x="335" y="329" text-anchor="middle" class="box-text dim">AlertEngine</text>
+
+        <path d="M540,290 V310" class="flow-line" marker-end="url(#arrow)"/>
+        <rect x="460" y="310" width="160" height="30" class="box-fill" rx="2"/>
+        <text x="540" y="329" text-anchor="middle" class="box-text dim">LocationDB</text>
+
+        <path d="M335,340 V352 H420 V352" class="flow-line"/>
+        <path d="M540,340 V352 H420" class="flow-line" marker-end="url(#arrow)"/>
+        <rect x="290" y="352" width="260" height="26" class="box-fill accent" rx="2"/>
+        <text x="420" y="370" text-anchor="middle" class="box-text">SQLite DB</text>
+
+        <path d="M550,365 H700 V273 H620" class="flow-line" marker-end="url(#arrow)"/>
+        <rect x="640" y="256" width="140" height="34" class="box-fill" rx="2"/>
+        <text x="710" y="277" text-anchor="middle" class="box-text dim">WebSocket</text>
+
+        <path d="M780,273 H820 V60 H640" class="flow-line" marker-end="url(#arrow)" opacity="0"/>
+      </svg>
+    </div>
+
+    <p style="color:var(--text-dim); font-size:14px; margin-top:18px;">The WebSocket layer pushes live state straight to the React dashboard, so every alert, reading, and location update appears on screen within the same second it's decoded from the gateway.</p>
+  </section>
+
+  <!-- WHAT'S BUILT -->
+  <section id="built">
+    <div class="section-head"><span class="section-num">02</span><h2>What's built</h2></div>
+    <p class="section-desc">Four layers, end to end: firmware on the nodes and gateway, a Node.js backend with two purpose-built AI agents, a live React dashboard, and full deployment documentation.</p>
+
+    <div class="filegroup-title">Firmware</div>
+    <table class="filetable">
+      <tr><th>File</th><th>Description</th></tr>
+      <tr><td>firmware/node/node.ino</td><td>Miner node — DHT22 + MQ-2 + LoRa TX + 4-screen OLED UI + SOS button</td></tr>
+      <tr><td>firmware/gateway/gateway.ino</td><td>Gateway — receives all 5 nodes, sends ACKs, forwards over serial, OLED overview</td></tr>
+    </table>
+
+    <div class="filegroup-title">Backend</div>
+    <table class="filetable">
+      <tr><th>File</th><th>Description</th></tr>
+      <tr><td>agents/signalAgent.js</td><td>AI Agent 1 — Kalman filter, anomaly detection, signal quality, heartbeat watchdog</td></tr>
+      <tr><td>agents/locationAgent.js</td><td>AI Agent 2 — RSSI path-loss model, particle filter, tunnel BFS pathfinding</td></tr>
+      <tr><td>models/db.js</td><td>SQLite schema, WAL mode, prepared statements, saveReadingTransaction</td></tr>
+      <tr><td>services/alertEngine.js</td><td>DGMS-aligned thresholds, severity 1–3, cooldown dedup, broadcast</td></tr>
+      <tr><td>services/serialBridge.js</td><td>Serial-to-backend bridge with realistic 5-node simulation fallback</td></tr>
+      <tr><td>routes/api.js</td><td>REST API — nodes, history, alerts, map, stats, inject, sync</td></tr>
+      <tr><td>server.js</td><td>Express + WebSocket server, wires all agents, serial, and alerts together</td></tr>
+    </table>
+
+    <div class="filegroup-title">Dashboard (React)</div>
+    <table class="filetable">
+      <tr><th>File</th><th>Description</th></tr>
+      <tr><td>store/useMineStore.js</td><td>Zustand store — WS connection, live node state, rolling history</td></tr>
+      <tr><td>components/NodeCard.jsx</td><td>Per-node card — temperature, humidity, gas, RSSI bars, location strip</td></tr>
+      <tr><td>components/NodeDetail.jsx</td><td>Expandable detail — live charts, location, anomalies</td></tr>
+      <tr><td>components/MineMap.jsx</td><td>Canvas mine map with live node positions and tunnel graph</td></tr>
+      <tr><td>components/GatewayStatus.jsx</td><td>Gateway health, LoRa config, node count</td></tr>
+      <tr><td>components/AlertsPanel.jsx</td><td>Live alerts with severity colours and acknowledge action</td></tr>
+      <tr><td>pages/Dashboard.jsx</td><td>Main view — five node cards, map, gateway status, alerts</td></tr>
+      <tr><td>pages/MapPage.jsx</td><td>Full mine map with position table</td></tr>
+      <tr><td>pages/AlertsPage.jsx</td><td>Alert center with acknowledge-all</td></tr>
+      <tr><td>pages/HistoryPage.jsx</td><td>Multi-node trend charts, per-node mini sparklines</td></tr>
+    </table>
+
+    <div class="filegroup-title">Docs</div>
+    <table class="filetable">
+      <tr><th>File</th><th>Description</th></tr>
+      <tr><td>docs/HARDWARE_BOM.md</td><td>Full bill of materials — part numbers, costs, wiring diagrams</td></tr>
+      <tr><td>docs/DEPLOYMENT_GUIDE.md</td><td>Step-by-step flash, install, calibration, and API reference</td></tr>
+    </table>
+  </section>
+
+  <!-- OLED SCREENS -->
+  <section id="oled">
+    <div class="section-head"><span class="section-num">03</span><h2>Node display</h2></div>
+    <p class="section-desc">Each miner node cycles through four OLED screens every 3 seconds. An SOS press overrides all of them immediately.</p>
+
+    <div class="oled-row">
+      <div class="oled">
+        <div class="oled-head">NODE 1 · SEC-A · ENVIRONMENT</div>
+        <div class="big">28.5°C</div>
+        TEMP<br>
+        <div class="big" style="margin-top:6px;">67%</div>
+        HUM
+      </div>
+      <div class="oled">
+        <div class="oled-head">NODE 1 · SEC-A · GAS / AIR</div>
+        <div class="big">342</div>
+        PPM · SAFE LEVEL
+      </div>
+      <div class="oled">
+        <div class="oled-head">NODE 1 · SEC-A · LORA SIGNAL</div>
+        RSSI: -82 dBm<br>
+        TX: 45 · ACK: 43<br>
+        <span class="bar">████░░</span>
+      </div>
+      <div class="oled">
+        <div class="oled-head">NODE 1 · SEC-A · STATUS</div>
+        T: 28.5 H: 67%<br>
+        GAS: 342 PPM<br>
+        RSSI: -82 · TX 45/43
+      </div>
+    </div>
+    <div class="oled-caption">Screen 0 — Environment · Screen 1 — Gas/air · Screen 2 — Signal · Screen 3 — Status</div>
+
+    <div style="max-width:220px; margin: 28px auto 0;">
+      <div class="oled sos">
+        <div class="oled-head">NODE 1 · SEC-A</div>
+        <div class="big">! SOS !</div>
+        <div style="text-align:center; opacity:0.85;">EMERGENCY TX</div>
+      </div>
+      <div class="oled-caption">SOS override — shown on all screens</div>
+    </div>
+  </section>
+
+  <!-- QUICK START -->
+  <section id="quickstart">
+    <div class="section-head"><span class="section-num">04</span><h2>Quick start — demo, no hardware</h2></div>
+    <p class="section-desc">The backend simulates all five nodes with realistic drift and occasional alerts whenever no serial port is present, so the full system can be demoed without any physical hardware.</p>
+
+    <div class="code-block"><span class="cmt"># Backend (simulation mode auto-activates without a serial port)</span>
+<span class="cmd">cd backend</span>
+<span class="cmd">npm install</span>
+<span class="cmd">npm start</span>
+
+<span class="cmt"># Dashboard (new terminal)</span>
+<span class="cmd">cd dashboard</span>
+<span class="cmd">npm install</span>
+<span class="cmd">npm run dev</span>
+
+<span class="cmt"># Open http://localhost:5173</span>
+<span class="cmt"># All 5 nodes simulate live data with realistic drift + occasional alerts</span></div>
+  </section>
+
+  <!-- KEY DESIGN DECISIONS -->
+  <section id="decisions">
+    <div class="section-head"><span class="section-num">05</span><h2>Key design decisions</h2></div>
+    <p class="section-desc">Every major choice traces back to one of the real constraints of an underground mine deployment.</p>
+
+    <div class="decision-list">
+      <div class="decision-row">
+        <div class="decision-constraint">Zero mobile coverage underground</div>
+        <div class="decision-solution">LoRa 915MHz, spreading factor 12 — 500m+ range through rock and bends</div>
+      </div>
+      <div class="decision-row">
+        <div class="decision-constraint">No internet at the pit head</div>
+        <div class="decision-solution">Offline-first SQLite database, with a sync queue for later cloud upload</div>
+      </div>
+      <div class="decision-row">
+        <div class="decision-constraint">Noisy RSSI readings</div>
+        <div class="decision-solution">Kalman filter in Agent 1, paired with a median filter in Agent 2</div>
+      </div>
+      <div class="decision-row">
+        <div class="decision-constraint">No GPS underground</div>
+        <div class="decision-solution">RSSI path-loss model plus a particle filter over the tunnel graph</div>
+      </div>
+      <div class="decision-row">
+        <div class="decision-constraint">Sensor failures</div>
+        <div class="decision-solution">Flatline detection and spike detection built into Agent 1</div>
+      </div>
+      <div class="decision-row">
+        <div class="decision-constraint">Miner entrapment</div>
+        <div class="decision-solution">30s / 120s heartbeat watchdog, plus an SOS button on every node</div>
+      </div>
+      <div class="decision-row">
+        <div class="decision-constraint">DGMS compliance</div>
+        <div class="decision-solution">Thresholds matched to the Coal Mines Regulations 2017, Regulation 167</div>
+      </div>
+      <div class="decision-row">
+        <div class="decision-constraint">Power cuts</div>
+        <div class="decision-solution">UPS on the gateway, 72-hour battery reserve on each miner node</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCALABILITY -->
+  <section id="scalability">
+    <div class="section-head"><span class="section-num">06</span><h2>Scalability path</h2></div>
+    <p class="section-desc">The MVP is a single-gateway, single-section deployment. Here's how it extends.</p>
+
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="rm-title">More mine sections</div>
+        <div class="rm-desc">Deploy additional gateways, each carrying its own section ID.</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="rm-title">True trilateration</div>
+        <div class="rm-desc">Multiple gateways let Agent 2 move from single-anchor to three-anchor positioning.</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="rm-title">Cloud sync</div>
+        <div class="rm-desc">Flush the sync_queue to any REST endpoint — BSNL, AWS, or GovCloud.</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="rm-title">Multilingual OLED</div>
+        <div class="rm-desc">Swap English labels for Hindi transliteration directly in the firmware.</div>
+      </div>
+      <div class="roadmap-item">
+        <div class="rm-title">Blockchain audit trail</div>
+        <div class="rm-desc">Hash each readings row and publish it to a permissioned chain.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>CoalMine LoRa+AI Monitoring Platform · MVP v1.0 · Underground Mine Safety</footer>
+
+</div>
+</body>
+</html>
