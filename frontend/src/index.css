@@ -1,0 +1,1404 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --bg-app: #03050d;
+  --bg-panel: #060a14;
+  --bg-card: rgba(255, 255, 255, 0.035);
+  --bg-card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --bg-card-nested: rgba(0, 0, 0, 0.28);
+  --bg-header: rgba(3, 5, 13, 0.94);
+  --bg-dropdown: #0a0f1e;
+  --bg-input: rgba(6, 10, 20, 0.75);
+  --bg-input-focus: rgba(12, 18, 34, 0.95);
+
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-card: rgba(255, 255, 255, 0.08);
+  --border-card-hover: rgba(255, 255, 255, 0.16);
+  --border-input: rgba(255, 255, 255, 0.12);
+  --border-header: rgba(255, 255, 255, 0.07);
+
+  --text-heading: #ffffff;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --text-faint: #475569;
+
+  --accent-amber: #f59e0b;
+  --accent-amber-text: #f59e0b;
+  --accent-amber-glow: rgba(245, 158, 11, 0.18);
+
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.55);
+  --shadow-dropdown: 0 24px 64px rgba(0, 0, 0, 0.7);
+
+  --grid-line: rgba(255, 255, 255, 0.025);
+  --grid-line-sm: rgba(255, 255, 255, 0.015);
+  --dot-color: rgba(255, 255, 255, 0.07);
+}
+
+html.light-mode {
+  --bg-app: #f1f5f9;
+  --bg-panel: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-gradient: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --bg-card-hover: #ffffff;
+  --bg-card-nested: #f8fafc;
+  --bg-header: rgba(255, 255, 255, 0.88);
+  --bg-dropdown: #ffffff;
+  --bg-input: #ffffff;
+  --bg-input-focus: #ffffff;
+
+  --border-subtle: #e2e8f0;
+  --border-card: rgba(15, 23, 42, 0.09);
+  --border-card-hover: rgba(15, 23, 42, 0.2);
+  --border-input: #cbd5e1;
+  --border-header: rgba(15, 23, 42, 0.08);
+
+  --text-heading: #0f172a;
+  --text-primary: #1e293b;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+  --text-faint: #94a3b8;
+
+  --accent-amber: #d97706;
+  --accent-amber-text: #b45309;
+  --accent-amber-glow: rgba(217, 119, 6, 0.15);
+
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 4px 16px 0 rgba(15, 23, 42, 0.04);
+  --shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 12px 24px -2px rgba(15, 23, 42, 0.08);
+  --shadow-dropdown: 0 20px 40px -4px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.06);
+
+  --grid-line: rgba(15, 23, 42, 0.045);
+  --grid-line-sm: rgba(15, 23, 42, 0.03);
+  --dot-color: rgba(15, 23, 42, 0.08);
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.45); }
+
+  ::selection { background: rgba(245,158,11,0.25); color: #fef3c7; }
+
+  input, select, textarea { outline: none; }
+
+  /* Remove number input arrows */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+}
+
+/* ─── Component layer ────────────────────────────────────────────────────── */
+@layer components {
+
+  /* ── Precision cards ─────────────────────────────────────────── */
+  .card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+    overflow: hidden;
+  }
+  html:not(.light-mode) .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 100% 0%, rgba(255,255,255,0.03) 0%, transparent 60%);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .card-hover:hover {
+    border-color: var(--border-card-hover);
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-1px);
+  }
+  .card-amber {
+    border-color: rgba(245,158,11,0.2);
+    box-shadow: 0 0 0 1px rgba(245,158,11,0.1) inset, 0 0 24px rgba(245,158,11,0.06), 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .card-safe {
+    border-color: rgba(16,185,129,0.2);
+    box-shadow: 0 0 0 1px rgba(16,185,129,0.08) inset, 0 0 24px rgba(16,185,129,0.06), 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .card-danger {
+    border-color: rgba(239,68,68,0.25);
+    box-shadow: 0 0 0 1px rgba(239,68,68,0.1) inset, 0 0 28px rgba(239,68,68,0.1), 0 4px 24px rgba(0,0,0,0.4);
+  }
+  .card-cyan {
+    border-color: rgba(6,182,212,0.2);
+    box-shadow: 0 0 0 1px rgba(6,182,212,0.08) inset, 0 0 24px rgba(6,182,212,0.06), 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  /* ── Inputs ──────────────────────────────────────────────────── */
+  .input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-radius: 0.625rem;
+    padding: 0.625rem 0.875rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .input:focus {
+    border-color: var(--accent-amber);
+    box-shadow: 0 0 0 3px var(--accent-amber-glow);
+    background: var(--bg-input-focus);
+  }
+  .input::placeholder { color: var(--text-faint); }
+
+  /* ── input-dark ─ used on all form inputs, selects, textareas ─── */
+  .input-dark {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-radius: 0.625rem;
+    padding: 0.6rem 0.875rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.5;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .input-dark:hover {
+    border-color: var(--border-card-hover);
+  }
+  .input-dark:focus {
+    border-color: var(--accent-amber);
+    box-shadow: 0 0 0 3px var(--accent-amber-glow);
+    background: var(--bg-input-focus);
+    color: var(--text-heading);
+    outline: none;
+  }
+  .input-dark:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .input-dark::placeholder { color: var(--text-faint); }
+
+  /* selects need an arrow */
+  select.input-dark {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.25rem;
+    cursor: pointer;
+  }
+  select.input-dark option {
+    background: var(--bg-dropdown);
+    color: var(--text-primary);
+  }
+  select.input-dark:focus {
+    border-color: var(--accent-amber);
+    box-shadow: 0 0 0 3px var(--accent-amber-glow);
+  }
+
+  /* textarea variant — richer editor feel */
+  textarea.input-dark {
+    resize: none;
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.65;
+    padding: 0.75rem 0.875rem;
+    border-radius: 0.75rem;
+    background: var(--bg-input);
+  }
+  textarea.input-dark:focus {
+    border-color: var(--accent-amber);
+    box-shadow: 0 0 0 3px var(--accent-amber-glow);
+    background: var(--bg-input-focus);
+  }
+
+  /* ── Buttons ─────────────────────────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.125rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    letter-spacing: 0.01em;
+  }
+  /* Ripple layer on all buttons */
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%);
+    background-size: 200% 100%;
+    background-position: 200% 0;
+    transition: background-position 0.4s ease;
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  .btn:hover::after  { background-position: -200% 0; }
+  .btn:active        { transform: scale(0.97); }
+  .btn:disabled      { opacity: 0.38; cursor: not-allowed; pointer-events: none; }
+
+  /* ── Primary (amber) — animated at rest + hover ─────────────── */
+  .btn-primary {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+    color: #000;
+    font-weight: 700;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.18) inset,
+      0 2px 8px rgba(245,158,11,0.3),
+      0 4px 20px rgba(245,158,11,0.18);
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    animation: amberIdlePulse 2.8s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Continuous shimmer sweep across the button */
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -75%;
+    width: 50%; height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.22) 50%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: amberShimmer 2.8s ease-in-out infinite;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.22) inset,
+      0 4px 16px rgba(245,158,11,0.55),
+      0 8px 32px rgba(245,158,11,0.3),
+      0 0 0 1px rgba(245,158,11,0.5);
+    transform: translateY(-2px) scale(1.015);
+    animation: none;   /* pause idle pulse on hover — hover shadow is enough */
+  }
+  .btn-primary:hover::before { animation: none; }
+  .btn-primary:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.12) inset,
+      0 2px 8px rgba(245,158,11,0.3);
+    animation: none;
+  }
+  .btn-primary:disabled {
+    animation: none;
+    opacity: 0.38;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .btn-primary:disabled::before { display: none; }
+
+  /* ── Ghost ───────────────────────────────────────────────────── */
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+    transition: all 0.2s cubic-bezier(0.16,1,0.3,1);
+  }
+  .btn-ghost:hover {
+    background: rgba(148,163,184,0.09);
+    color: var(--text-heading);
+    border-color: rgba(148,163,184,0.3);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transform: translateY(-1px);
+  }
+  .btn-ghost:active { transform: translateY(0) scale(0.97); }
+
+  /* ── Danger (red) ────────────────────────────────────────────── */
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+    background-size: 200% 100%;
+    background-position: 0% 0;
+    color: #fff;
+    font-weight: 700;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.1) inset,
+      0 2px 8px rgba(239,68,68,0.3),
+      0 4px 20px rgba(239,68,68,0.15);
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1),
+                background-position 0.4s ease;
+  }
+  .btn-danger:hover {
+    background-position: 100% 0;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.12) inset,
+      0 4px 16px rgba(239,68,68,0.5),
+      0 8px 32px rgba(239,68,68,0.25),
+      0 0 0 1px rgba(239,68,68,0.5);
+    transform: translateY(-2px);
+  }
+  .btn-danger:active { transform: translateY(0) scale(0.97); }
+
+  /* ── Icon button ─────────────────────────────────────────────── */
+  .btn-icon {
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border-radius: 0.5rem;
+    background: var(--bg-card-nested);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-dim);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.16,1,0.3,1);
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-icon:hover {
+    background: rgba(148,163,184,0.15);
+    color: var(--text-heading);
+    border-color: rgba(148,163,184,0.3);
+    transform: translateY(-1px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  .btn-icon:active { transform: scale(0.95); }
+
+  /* ── Success (green) — for confirm/save actions ───────────────── */
+  .btn-success {
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+    background-size: 200% 100%;
+    background-position: 0% 0;
+    color: #fff;
+    font-weight: 700;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.1) inset,
+      0 2px 8px rgba(16,185,129,0.3),
+      0 4px 20px rgba(16,185,129,0.15);
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1),
+                background-position 0.4s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.125rem;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-success:hover {
+    background-position: 100% 0;
+    box-shadow:
+      0 4px 16px rgba(16,185,129,0.45),
+      0 8px 32px rgba(16,185,129,0.2),
+      0 0 0 1px rgba(16,185,129,0.5);
+    transform: translateY(-2px);
+  }
+  .btn-success:active { transform: translateY(0) scale(0.97); }
+
+  /* ── Nav buttons ─────────────────────────────────────────────── */
+  .nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-dim);
+    transition: all 0.15s ease;
+    position: relative;
+    white-space: nowrap;
+  }
+  .nav-item:hover {
+    color: var(--text-heading);
+    background: rgba(148, 163, 184, 0.1);
+  }
+  .nav-item-active {
+    color: var(--accent-amber-text);
+    background: var(--accent-amber-glow);
+    box-shadow: 0 0 0 1px var(--accent-amber-glow);
+  }
+
+  /* ── Badges ──────────────────────────────────────────────────── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.1875rem 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+  }
+  .badge-safe    { background: rgba(16,185,129,0.14);  color: #10b981; border-color: rgba(16,185,129,0.25);  }
+  .badge-warn    { background: rgba(245,158,11,0.14);  color: #f59e0b; border-color: rgba(245,158,11,0.25);  }
+  .badge-danger  { background: rgba(239,68,68,0.14);   color: #ef4444; border-color: rgba(239,68,68,0.25);   }
+  .badge-cyan    { background: rgba(6,182,212,0.14);   color: #06b6d4; border-color: rgba(6,182,212,0.25);   }
+  .badge-violet  { background: rgba(139,92,246,0.14);  color: #8b5cf6; border-color: rgba(139,92,246,0.25);  }
+  .badge-neutral { background: rgba(148,163,184,0.12); color: var(--text-muted); border-color: var(--border-subtle); }
+
+  /* ── Status dots ─────────────────────────────────────────────── */
+  .dot { width: 0.5rem; height: 0.5rem; border-radius: 9999px; flex-shrink: 0; }
+  .dot-online  { background: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.2); }
+  .dot-offline { background: var(--text-faint); }
+  .dot-warn    { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,0.2); }
+  .dot-danger  { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.25); }
+
+  /* ── Label + value pairs ─────────────────────────────────────── */
+  .label { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+  .value { font-size: 1.5rem; font-weight: 800; line-height: 1; font-family: 'JetBrains Mono', monospace; color: var(--text-heading); }
+  .value-sm { font-size: 1.125rem; font-weight: 700; line-height: 1; font-family: 'JetBrains Mono', monospace; color: var(--text-heading); }
+
+  /* ── Progress ────────────────────────────────────────────────── */
+  .progress-track { height: 3px; background: rgba(148, 163, 184, 0.15); border-radius: 9999px; overflow: hidden; }
+  .progress-fill  { height: 100%; border-radius: 9999px; transition: width 0.5s cubic-bezier(0.16,1,0.3,1); }
+
+  /* ── Section header ──────────────────────────────────────────── */
+  .section-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.875rem;
+  }
+
+  /* alias used in newer components */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── Metric label (tiny ALL-CAPS label above a value) ─────────── */
+  .metric-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: block;
+  }
+
+  /* ── Extra badge variants ─────────────────────────────────────── */
+  .badge-info    { background: rgba(6,182,212,0.14);   color: #0891b2; border: 1px solid rgba(6,182,212,0.25);   border-radius: 0.375rem; font-size: 0.6875rem; font-weight: 700; padding: 0.1875rem 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem; }
+  .badge-offline { background: rgba(148,163,184,0.15); color: var(--text-dim); border: 1px solid var(--border-subtle); border-radius: 0.375rem; font-size: 0.6875rem; font-weight: 700; padding: 0.1875rem 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem; }
+
+  /* ── Deeper surface (nested inside cards) ─────────────────────── */
+  .bg-mine-deeper { background: var(--bg-card-nested); }
+
+  /* ── Live pulse indicator ────────────────────────────────────── */
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.25);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #10b981;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Table ───────────────────────────────────────────────────── */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    padding: 0.625rem 0.875rem;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .data-table td {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .data-table tbody tr:hover td { background: rgba(148, 163, 184, 0.07); color: var(--text-heading); }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+
+  /* ── Divider ─────────────────────────────────────────────────── */
+  .divider { height: 1px; background: var(--border-subtle); }
+
+  /* ── Tooltip ─────────────────────────────────────────────────── */
+  .tooltip {
+    position: absolute;
+    z-index: 50;
+    padding: 0.375rem 0.625rem;
+    background: var(--bg-dropdown);
+    border: 1px solid var(--border-card);
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    box-shadow: var(--shadow-dropdown);
+    pointer-events: none;
+  }
+}
+
+/* ─── Utilities ──────────────────────────────────────────────────────────── */
+@layer utilities {
+  .bg-grid {
+    background-image: linear-gradient(var(--grid-line) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .bg-grid-sm {
+    background-image: linear-gradient(var(--grid-line-sm) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--grid-line-sm) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .bg-dot {
+    background-image: radial-gradient(circle, var(--dot-color) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .text-glow-amber { text-shadow: 0 0 20px rgba(245,158,11,0.5); }
+  .text-glow-safe  { text-shadow: 0 0 20px rgba(16,185,129,0.5); }
+  .text-glow-danger{ text-shadow: 0 0 20px rgba(239,68,68,0.6); }
+  .text-glow-cyan  { text-shadow: 0 0 20px rgba(6,182,212,0.5); }
+
+  .clip-tr { clip-path: polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%); }
+
+  .glass {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+
+  .highlight-line::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg,transparent,rgba(245,158,11,0.6),transparent);
+  }
+
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  .no-select { user-select: none; }
+}
+
+/* ─── SOS emergency override ─────────────────────────────────────────────── */
+.sos-active-border {
+  border-color: rgba(239,68,68,0.6) !important;
+  animation: sos-pulse 1s ease-in-out infinite;
+}
+
+/* ─── Live location pulse ────────────────────────────────────────────────── */
+@keyframes locationPulse {
+  0%   { transform: translate(-50%,-50%) scale(0.5); opacity: 0.8; }
+  70%  { transform: translate(-50%,-50%) scale(2.2); opacity: 0; }
+  100% { transform: translate(-50%,-50%) scale(2.2); opacity: 0; }
+}
+
+/* ─── Recharts overrides ─────────────────────────────────────────────────── */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--bg-dropdown) !important;
+  border: 1px solid var(--border-card) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: var(--shadow-dropdown) !important;
+}
+.recharts-default-tooltip .recharts-tooltip-label {
+  color: var(--text-heading) !important;
+  font-weight: 700;
+  font-size: 11px;
+}
+.recharts-default-tooltip .recharts-tooltip-item {
+  color: var(--text-secondary) !important;
+  font-size: 11px;
+}
+.recharts-cartesian-grid line { stroke: var(--grid-line) !important; }
+
+/* ── Leaflet map overrides ───────────────────────────────────────────────── */
+
+/* Make the map container rounded inside the card */
+.leaflet-container {
+  background: #0a0f1e;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Popup bubble — match dark theme */
+.leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,0,0,0.08) !important;
+  padding: 0 !important;
+  overflow: hidden;
+}
+.leaflet-popup-content {
+  margin: 14px 16px !important;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #0f172a;
+}
+.leaflet-popup-tip { background: #ffffff !important; }
+.leaflet-popup-close-button {
+  color: #94a3b8 !important;
+  font-size: 16px !important;
+  top: 6px !important;
+  right: 8px !important;
+}
+.leaflet-popup-close-button:hover { color: #0f172a !important; }
+
+/* Tooltip — small label above markers */
+.leaflet-tooltip {
+  background: rgba(0,0,0,0.75) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 6px !important;
+  color: #f1f5f9 !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 2px 6px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+  white-space: nowrap;
+}
+.leaflet-tooltip-top::before { border-top-color: rgba(0,0,0,0.75) !important; }
+.leaflet-tooltip-bottom::before { border-bottom-color: rgba(0,0,0,0.75) !important; }
+
+/* Zoom controls */
+.leaflet-control-zoom a {
+  background: rgba(10,15,30,0.92) !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+.leaflet-control-zoom a:hover {
+  background: rgba(26,37,64,0.95) !important;
+  color: #f59e0b !important;
+}
+
+/* Attribution bar */
+.leaflet-control-attribution {
+  background: rgba(0,0,0,0.6) !important;
+  color: #64748b !important;
+  font-size: 9px !important;
+  backdrop-filter: blur(4px);
+}
+.leaflet-control-attribution a { color: #94a3b8 !important; }
+
+/* SOS ring animation for node icons */
+@keyframes sosRing {
+  0%,100% { transform: scale(1);   opacity: 0.8; }
+  50%      { transform: scale(1.5); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE INDUSTRIAL SCADA & TELEMETRY STYLING
+   Precision slate palette, tactile cards, crisp micro-borders, clean typography
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Heading and text contrast overrides ────────────────────────────────── */
+html.light-mode h1.text-white,
+html.light-mode h2.text-white,
+html.light-mode h3.text-white,
+html.light-mode h4.text-white,
+html.light-mode .text-white:not(.btn *):not(.badge *):not(.badge-danger):not(.badge-safe):not(.badge-warn):not([style*="background: linear-gradient"]):not([style*="background: rgb(239"]):not([style*="background:#ef4444"]):not([style*="background: #ef4444"]):not([style*="background:#dc2626"]):not(.sos-banner *):not(.bg-danger *) {
+  color: var(--text-heading) !important;
+}
+
+/* ── Light Mode Glass Cards ─────────────────────────────────────────────── */
+html.light-mode .card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+}
+html.light-mode .card::before {
+  display: none !important;
+}
+html.light-mode .card-hover:hover {
+  border-color: var(--border-card-hover);
+  box-shadow: var(--shadow-card-hover);
+}
+html.light-mode .card-amber {
+  border-color: rgba(217, 119, 6, 0.28);
+  box-shadow: 0 0 0 1px rgba(217, 119, 6, 0.12) inset, 0 4px 16px rgba(217, 119, 6, 0.05);
+}
+html.light-mode .card-safe {
+  border-color: rgba(16, 185, 129, 0.28);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.12) inset, 0 4px 16px rgba(16, 185, 129, 0.05);
+}
+html.light-mode .card-danger {
+  border-color: rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.12) inset, 0 4px 20px rgba(239, 68, 68, 0.06);
+}
+html.light-mode .card-cyan {
+  border-color: rgba(6, 182, 212, 0.28);
+  box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.12) inset, 0 4px 16px rgba(6, 182, 212, 0.05);
+}
+
+/* ── Light Mode Badges (Rich contrast without neon wash) ─────────────────── */
+html.light-mode .badge-safe {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+html.light-mode .badge-warn {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+html.light-mode .badge-danger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+html.light-mode .badge-cyan,
+html.light-mode .badge-info {
+  background: #f0f9ff;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+html.light-mode .badge-violet {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border-color: #ddd6fe;
+}
+html.light-mode .badge-neutral,
+html.light-mode .badge-offline {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+}
+
+/* ── Light Mode Live Pulse Badge ────────────────────────────────────────── */
+html.light-mode .live-badge {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+/* ── Light Mode Glass Effects ───────────────────────────────────────────── */
+html.light-mode .glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+}
+
+/* ── Light Mode Recharts Overrides ──────────────────────────────────────── */
+html.light-mode .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.04) !important;
+}
+html.light-mode .recharts-default-tooltip .recharts-tooltip-item {
+  color: #334155 !important;
+}
+html.light-mode .recharts-default-tooltip .recharts-tooltip-label {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+html.light-mode .recharts-cartesian-grid line {
+  stroke: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* ── Light Mode Leaflet Map Overrides ───────────────────────────────────── */
+html.light-mode .leaflet-container {
+  background: #cbd5e1;
+}
+html.light-mode .leaflet-control-zoom a {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+html.light-mode .leaflet-control-zoom a:hover {
+  background: #f8fafc !important;
+  color: #d97706 !important;
+}
+html.light-mode .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: #64748b !important;
+  backdrop-filter: blur(8px);
+}
+html.light-mode .leaflet-control-attribution a {
+  color: #0284c7 !important;
+}
+html.light-mode .leaflet-tooltip {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f8fafc !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+html.light-mode .leaflet-tooltip-top::before { border-top-color: #0f172a !important; }
+html.light-mode .leaflet-tooltip-bottom::before { border-bottom-color: #0f172a !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM INDUSTRIAL SCADA DESIGN LAYER
+   Rich depth, precision typography, tactile micro-surfaces, glow states
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Premium body background texture ─────────────────────────────────────── */
+html:not(.light-mode) body {
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(245,158,11,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(6,182,212,0.02) 0%, transparent 50%);
+}
+html.light-mode body {
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(245,158,11,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 80% 60% at 100% 100%, rgba(6,182,212,0.02) 0%, transparent 50%);
+}
+
+/* ── Header accent bar animation ─────────────────────────────────────────── */
+@keyframes slideAccent {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+header .accent-top-line {
+  background-size: 200% auto;
+  animation: slideAccent 4s linear infinite;
+}
+
+/* ── Premium card depth — dark ───────────────────────────────────────────── */
+html:not(.light-mode) .card {
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 0 0 0.5px rgba(255,255,255,0.04) inset,
+    0 1px 0 0 rgba(255,255,255,0.06) inset,
+    0 4px 24px rgba(0,0,0,0.5),
+    0 1px 2px rgba(0,0,0,0.4);
+}
+html:not(.light-mode) .card:hover {
+  border-color: rgba(255,255,255,0.13);
+  box-shadow:
+    0 0 0 0.5px rgba(255,255,255,0.06) inset,
+    0 1px 0 0 rgba(255,255,255,0.09) inset,
+    0 8px 32px rgba(0,0,0,0.55),
+    0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* ── Premium card depth — light ──────────────────────────────────────────── */
+html.light-mode .card {
+  background: #ffffff;
+  border: 1px solid rgba(15,23,42,0.08);
+  box-shadow:
+    0 0 0 0.5px rgba(15,23,42,0.04) inset,
+    0 1px 3px 0 rgba(15,23,42,0.04),
+    0 4px 16px 0 rgba(15,23,42,0.05);
+}
+html.light-mode .card:hover {
+  border-color: rgba(15,23,42,0.14);
+  box-shadow:
+    0 0 0 0.5px rgba(15,23,42,0.06) inset,
+    0 2px 6px 0 rgba(15,23,42,0.06),
+    0 12px 24px 0 rgba(15,23,42,0.08);
+}
+
+/* ── Precision inner tiles (nested bg) ───────────────────────────────────── */
+html:not(.light-mode) .bg-mine-deeper,
+html:not(.light-mode) [style*="var(--bg-card-nested)"] {
+  background: rgba(0,0,0,0.22) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+html.light-mode .bg-mine-deeper,
+html.light-mode [style*="var(--bg-card-nested)"] {
+  background: #f8fafc !important;
+  border-color: rgba(15,23,42,0.06) !important;
+}
+
+/* ── KPI value glow — dark mode only ─────────────────────────────────────── */
+html:not(.light-mode) .value,
+html:not(.light-mode) .value-sm {
+  text-shadow: 0 0 24px currentColor;
+  filter: brightness(1.08);
+}
+
+/* ── Status badge pulse animations ───────────────────────────────────────── */
+@keyframes statusGlow {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; }
+  50% { box-shadow: 0 0 8px 2px currentColor; }
+}
+.badge-danger { animation: none; }
+.badge-danger.animate-pulse-glow { animation: statusGlow 1.2s ease-in-out infinite; }
+
+/* ── Crisp data table premium rows ───────────────────────────────────────── */
+.data-table thead th:first-child { border-radius: 0.5rem 0 0 0; }
+.data-table thead th:last-child  { border-radius: 0 0.5rem 0 0; }
+.data-table tbody tr { transition: background 0.12s ease; }
+
+html:not(.light-mode) .data-table th {
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(8px);
+}
+html.light-mode .data-table th {
+  background: #f8fafc;
+}
+html.light-mode .data-table td {
+  color: #334155;
+}
+html.light-mode .data-table tbody tr:hover td {
+  background: rgba(15,23,42,0.035);
+  color: #0f172a;
+}
+
+/* ── Frosted header (light mode) ─────────────────────────────────────────── */
+html.light-mode header {
+  background: rgba(255,255,255,0.85) !important;
+  border-bottom-color: rgba(15,23,42,0.08) !important;
+  box-shadow: 0 1px 0 rgba(15,23,42,0.06), 0 4px 20px rgba(15,23,42,0.04) !important;
+}
+
+/* ── Nav items light mode ─────────────────────────────────────────────────── */
+html.light-mode .nav-item { color: #64748b; }
+html.light-mode .nav-item:hover { color: #0f172a; background: rgba(15,23,42,0.05); }
+html.light-mode .nav-item-active { color: #d97706; background: rgba(217,119,6,0.1); box-shadow: 0 0 0 1px rgba(217,119,6,0.2); }
+
+/* ── Auth page backgrounds light mode ─────────────────────────────────────── */
+html.light-mode .bg-surface-950 {
+  background-color: #f1f5f9 !important;
+}
+
+/* ── Button primary — crisp in light ─────────────────────────────────────── */
+html.light-mode .btn-primary {
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 3px 12px rgba(217,119,6,0.25);
+}
+html.light-mode .btn-ghost {
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+html.light-mode .btn-ghost:hover {
+  background: rgba(15,23,42,0.05);
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+html.light-mode .btn-icon {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+html.light-mode .btn-icon:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* ── Section headers light mode ──────────────────────────────────────────── */
+html.light-mode .section-head,
+html.light-mode .section-title,
+html.light-mode .label,
+html.light-mode .metric-label {
+  color: #94a3b8;
+}
+
+/* ── Progress tracks light mode ──────────────────────────────────────────── */
+html.light-mode .progress-track {
+  background: rgba(15,23,42,0.08);
+}
+
+/* ── Scrollbar styling ───────────────────────────────────────────────────── */
+html.light-mode ::-webkit-scrollbar-thumb {
+  background: rgba(15,23,42,0.15);
+}
+html.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15,23,42,0.25);
+}
+
+/* ── Selection highlight light mode ──────────────────────────────────────── */
+html.light-mode ::selection {
+  background: rgba(217,119,6,0.2);
+  color: #92400e;
+}
+
+/* ── Input light mode ────────────────────────────────────────────────────── */
+html.light-mode .input,
+html.light-mode .input-dark {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+}
+html.light-mode .input:focus,
+html.light-mode .input-dark:focus {
+  border-color: #d97706;
+  box-shadow: 0 0 0 3px rgba(217,119,6,0.12);
+  background: #ffffff;
+}
+html.light-mode .input::placeholder,
+html.light-mode .input-dark::placeholder { color: #94a3b8; }
+
+/* ── Divider light mode ───────────────────────────────────────────────────── */
+html.light-mode .divider { background: #e2e8f0; }
+
+/* ── Dot indicators light ─────────────────────────────────────────────────── */
+html.light-mode .dot-offline { background: #cbd5e1; }
+
+/* ── Live badge light mode ───────────────────────────────────────────────── */
+html.light-mode .live-badge {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+/* ── Text color overrides light mode ─────────────────────────────────────── */
+html.light-mode .text-ink-100,
+html.light-mode .text-ink-200 { color: var(--text-heading) !important; }
+html.light-mode .text-ink-300 { color: var(--text-secondary) !important; }
+html.light-mode .text-ink-400 { color: var(--text-muted) !important; }
+html.light-mode .text-ink-500,
+html.light-mode .text-ink-600 { color: var(--text-dim) !important; }
+
+/* ── Tooltip light mode ──────────────────────────────────────────────────── */
+html.light-mode .tooltip {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 10px 25px -5px rgba(15,23,42,0.12);
+}
+
+/* ── Animated focus ring ─────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent-amber);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Premium separator accent ────────────────────────────────────────────── */
+.separator-amber {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-amber), transparent);
+  opacity: 0.4;
+}
+
+/* ── Shimmer loading skeleton ────────────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card-nested) 25%, var(--bg-card) 50%, var(--bg-card-nested) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+  border-radius: 0.5rem;
+}
+
+html:not(.light-mode) .text-glow-amber {
+  text-shadow: 0 0 30px rgba(245,158,11,0.45), 0 0 60px rgba(245,158,11,0.2);
+}
+html.light-mode .text-glow-amber { text-shadow: none; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DASHBOARD PAGES — COMPREHENSIVE LIGHT MODE OVERRIDES
+   Fixes all dark-only Tailwind opacity patterns across every page
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Dark-background role/type color pills → clean light versions ────────── */
+html.light-mode .bg-amber-900\/20,
+html.light-mode .bg-amber-900\/30 { background-color: #fffbeb !important; }
+html.light-mode .bg-blue-900\/20,
+html.light-mode .bg-blue-900\/30  { background-color: #eff6ff !important; }
+html.light-mode .bg-red-900\/20,
+html.light-mode .bg-red-900\/30   { background-color: #fef2f2 !important; }
+html.light-mode .bg-purple-900\/20,
+html.light-mode .bg-purple-900\/30{ background-color: #f5f3ff !important; }
+html.light-mode .bg-green-900\/20,
+html.light-mode .bg-green-900\/30 { background-color: #f0fdf4 !important; }
+html.light-mode .bg-orange-900\/20,
+html.light-mode .bg-orange-900\/30{ background-color: #fff7ed !important; }
+
+/* ── Dark border tints → light equivalents ───────────────────────────────── */
+html.light-mode .border-mine-accent\/30 { border-color: rgba(217,119,6,0.3) !important; }
+html.light-mode .border-mine-blue\/30   { border-color: rgba(56,189,248,0.35) !important; }
+html.light-mode .border-red-700\/30     { border-color: rgba(220,38,38,0.25) !important; }
+html.light-mode .border-orange-700\/30  { border-color: rgba(234,88,12,0.25) !important; }
+html.light-mode .border-purple-700\/30  { border-color: rgba(124,58,237,0.25) !important; }
+html.light-mode .border-red-800         { border-color: #fecaca !important; }
+html.light-mode .border-orange-800      { border-color: #fed7aa !important; }
+html.light-mode .border-yellow-800      { border-color: #fde68a !important; }
+html.light-mode .border-green-800\/40,
+html.light-mode .border-green-800       { border-color: #bbf7d0 !important; }
+html.light-mode .border-orange-700\/40  { border-color: #fed7aa !important; }
+html.light-mode .border-red-700\/40     { border-color: #fecaca !important; }
+html.light-mode .border-mine-border\/40,
+html.light-mode .border-mine-border\/60 { border-color: #e2e8f0 !important; }
+
+/* ── Dark hover patterns → light hover ───────────────────────────────────── */
+html.light-mode .hover\:bg-white\/5:hover { background-color: rgba(15,23,42,0.05) !important; }
+html.light-mode .hover\:bg-mine-panel:hover { background-color: #f8fafc !important; }
+html.light-mode .bg-mine-border { background-color: #f1f5f9 !important; }
+html.light-mode .bg-mine-border\/40 { background-color: rgba(226,232,240,0.6) !important; }
+
+/* ── HistoryPage — metric tab buttons ────────────────────────────────────── */
+html.light-mode .bg-mine-accent.text-white {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+}
+html.light-mode .bg-mine-text { background-color: #1e293b !important; }
+
+/* ── ShiftLog — type selector active state bg ────────────────────────────── */
+/* The active button uses bg-amber-900/20 + border + color — already handled above */
+/* Inactive "hover:bg-white/5" buttons — already handled above */
+
+/* ── Profile page — "saved" success banner ───────────────────────────────── */
+html.light-mode .bg-green-900\/30 { background-color: #f0fdf4 !important; }
+html.light-mode .border-green-700\/50 { border-color: #86efac !important; }
+html.light-mode .text-green-400 { color: #16a34a !important; }
+
+/* ── Settings — toggle button ────────────────────────────────────────────── */
+html.light-mode .border-mine-border.bg-mine-deeper {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+html.light-mode .hover\:border-mine-accent\/40:hover { border-color: rgba(217,119,6,0.3) !important; }
+
+/* ── AlertsPage border classes ───────────────────────────────────────────── */
+/* Already done via border-red-800 etc above */
+
+/* ── Text colors in light mode — status-specific ─────────────────────────── */
+html.light-mode .text-orange-400 { color: #c2410c !important; }
+html.light-mode .text-red-400    { color: #dc2626 !important; }
+html.light-mode .text-yellow-400 { color: #b45309 !important; }
+html.light-mode .text-green-400  { color: #16a34a !important; }
+
+/* ── mine- color token text classes in light mode ────────────────────────── */
+html.light-mode .text-mine-dim  { color: var(--text-dim) !important; }
+html.light-mode .text-mine-text { color: var(--text-secondary) !important; }
+html.light-mode .text-mine-muted{ color: var(--text-muted) !important; }
+html.light-mode .text-mine-blue  { color: #0284c7 !important; }
+html.light-mode .text-mine-cyan  { color: #0891b2 !important; }
+html.light-mode .text-mine-purple{ color: #7c3aed !important; }
+html.light-mode .text-mine-accent{ color: #d97706 !important; }
+
+/* ── HistoryPage mini chart tooltip ──────────────────────────────────────── */
+/* contentStyle={{ background: '#111827', ... }} — no CSS override possible for inline,
+   but the global Recharts override (var(--bg-dropdown)) already handles the main chart.
+   For NodeMiniChart inline style, we add a rule targeting recharts in light mode: */
+html.light-mode .recharts-tooltip-content,
+html.light-mode .recharts-default-tooltip {
+  background: var(--bg-dropdown) !important;
+  border-color: var(--border-card) !important;
+  color: var(--text-heading) !important;
+}
+
+/* ── Dashboard main area bg ──────────────────────────────────────────────── */
+html.light-mode .min-h-screen.bg-mine-bg {
+  background-color: var(--bg-app) !important;
+}
+
+/* ── Main content wrapper ────────────────────────────────────────────────── */
+html.light-mode main { background-color: var(--bg-app); }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+html.light-mode footer {
+  background-color: var(--bg-panel) !important;
+  border-top-color: var(--border-subtle) !important;
+}
+
+/* ── NodeDetail panel ────────────────────────────────────────────────────── */
+html.light-mode .bg-mine-panel {
+  background-color: var(--bg-panel) !important;
+}
+
+/* ── Accordion / collapsible rows ────────────────────────────────────────── */
+html.light-mode .hover\:bg-mine-border\/30:hover {
+  background-color: rgba(15,23,42,0.05) !important;
+}
+
+/* ── Range input track ───────────────────────────────────────────────────── */
+html.light-mode input[type=range] {
+  accent-color: #d97706;
+}
+
+/* ── SOS banner always high-contrast ────────────────────────────────────── */
+.sos-banner,
+.sos-banner * { color: #ffffff !important; }
+
+/* ── Map page status pills ───────────────────────────────────────────────── */
+html.light-mode [style*="rgba(16,185,129,0.1)"] {
+  background: rgba(16,185,129,0.08) !important;
+}
+html.light-mode [style*="rgba(56,189,248,0.08)"] {
+  background: rgba(56,189,248,0.06) !important;
+}
+
+/* ── NodeCard selected ring ──────────────────────────────────────────────── */
+html.light-mode .bg-mine-accent\/20 { background-color: rgba(217,119,6,0.1) !important; }
+
+/* ── Shift log entry cards ───────────────────────────────────────────────── */
+html.light-mode .card.border.bg-amber-900\/20 { background: #fffbeb !important; }
+html.light-mode .card.border.bg-blue-900\/20  { background: #eff6ff !important; }
+html.light-mode .card.border.bg-red-900\/20   { background: #fef2f2 !important; }
+html.light-mode .card.border.bg-orange-900\/20{ background: #fff7ed !important; }
+
+/* ── Ensure h1, h2, h3 are always readable ──────────────────────────────── */
+html.light-mode h1, html.light-mode h2, html.light-mode h3, html.light-mode h4 {
+  color: var(--text-heading);
+}
+
+/* ── Consistent font-bold values light mode ──────────────────────────────── */
+html.light-mode .font-mono.text-mine-dim { color: var(--text-dim) !important; }
+
+
+/* ─── Button keyframe animations ────────────────────────────────────────── */
+
+/* Amber glow pulse — used on .btn-primary when something important needs attention */
+@keyframes btnAmberPulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(245,158,11,0.25), 0 4px 20px rgba(245,158,11,0.15); }
+  50%       { box-shadow: 0 2px 12px rgba(245,158,11,0.55), 0 6px 32px rgba(245,158,11,0.35), 0 0 0 4px rgba(245,158,11,0.1); }
+}
+
+/* Red pulse — used on danger/SOS buttons */
+@keyframes btnDangerPulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(239,68,68,0.3), 0 4px 20px rgba(239,68,68,0.15); }
+  50%       { box-shadow: 0 2px 12px rgba(239,68,68,0.6), 0 6px 32px rgba(239,68,68,0.35), 0 0 0 4px rgba(239,68,68,0.12); }
+}
+
+/* Apply pulse to buttons with these utility classes */
+.btn-pulse-amber { animation: btnAmberPulse 2s ease-in-out infinite; }
+.btn-pulse-danger { animation: btnDangerPulse 1.5s ease-in-out infinite; }
+
+/* ─── AnimatedButton ripple ─────────────────────────────────────────────── */
+@keyframes rippleExpand {
+  0%   { transform: scale(0); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* ─── FormField animations ──────────────────────────────────────────────── */
+@keyframes formShake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-6px); }
+  30%       { transform: translateX(5px); }
+  45%       { transform: translateX(-4px); }
+  60%       { transform: translateX(3px); }
+  75%       { transform: translateX(-2px); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Animated form card (slides up on mount) ───────────────────────────── */
+@keyframes formSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.form-animated {
+  animation: formSlideUp 0.35s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ─── Filter button group ───────────────────────────────────────────────── */
+.filter-btn {
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+  overflow: hidden;
+}
+.filter-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: #cbd5e1;
+  border-color: rgba(255,255,255,0.14);
+  transform: translateY(-1px);
+}
+.filter-btn.active {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #000;
+  border-color: transparent;
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(245,158,11,0.35);
+  transform: translateY(-1px);
+  animation: amberIdlePulse 2.8s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+.filter-btn.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -75%;
+  width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%);
+  transform: skewX(-20deg);
+  animation: amberShimmer 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Yellow/amber button idle animations ───────────────────────────────── */
+
+/* Gentle glow pulse — button breathes at rest */
+@keyframes amberIdlePulse {
+  0%, 100% {
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.18) inset,
+      0 2px 8px  rgba(245,158,11,0.28),
+      0 4px 20px rgba(245,158,11,0.15);
+  }
+  50% {
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.22) inset,
+      0 3px 14px rgba(245,158,11,0.50),
+      0 6px 28px rgba(245,158,11,0.28),
+      0 0 0 3px  rgba(245,158,11,0.10);
+  }
+}
+
+/* Shimmer sweep left → right continuously */
+@keyframes amberShimmer {
+  0%   { left: -75%; opacity: 0; }
+  10%  { opacity: 1; }
+  60%  { left: 125%; opacity: 1; }
+  61%  { opacity: 0; }
+  100% { left: 125%; opacity: 0; }
+}

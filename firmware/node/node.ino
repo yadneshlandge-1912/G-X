@@ -142,6 +142,7 @@ void setup() {
 
   // ── OLED ──────────────────────────────────────────────────
   Wire.begin(OLED_SDA, OLED_SCL);
+  Wire.setClock(400000);   // Fast I2C mode 400kHz
   if (display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
     showSplash();
   } else {
@@ -208,8 +209,10 @@ void loop() {
 
   // SOS button (active LOW)
   sosActive = (digitalRead(SOS_PIN) == LOW);
-  if (sosActive) {
-    beep(3, 300);
+  static unsigned long lastSosBeep = 0;
+  if (sosActive && (millis() - lastSosBeep > 2500)) {
+    lastSosBeep = millis();
+    beep(2, 100);
   }
 
   // Microphone

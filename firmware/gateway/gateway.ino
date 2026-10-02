@@ -87,6 +87,7 @@ void setup() {
 
   // ── OLED ──
   Wire.begin(OLED_SDA, OLED_SCL);
+  Wire.setClock(400000);   // Fast mode 400kHz I2C — eliminates slow bus lag
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     Serial.println(F("[OLED] FAIL"));
   }
@@ -170,14 +171,14 @@ void loop() {
     flushBuffer();
   }
 
-  // OLED update
-  if (millis() - lastOledSwitch > 2500) {
+  // OLED update — only refresh periodically, never on every loop iteration
+  if (millis() - lastOledSwitch > 2000) {
     lastOledSwitch = millis();
     oledPage = (oledPage + 1) % (MAX_NODES + 1);
+    updateOLED();
   }
-  updateOLED();
 
-  delay(10);
+  delay(5);
 }
 
 // ================================================================
