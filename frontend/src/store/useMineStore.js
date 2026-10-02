@@ -5,8 +5,9 @@
  */
 import { create } from 'zustand';
 
-const WS_URL    = `ws://${window.location.hostname}:3001/ws`;
-const API_BASE  = '/api';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:3001`;
+const WS_URL      = BACKEND_URL.replace(/^http/, 'ws') + '/ws';
+const API_BASE    = BACKEND_URL + '/api';
 const HISTORY_MAX = 60;   // keep 60 data points per node for charts
 
 // Helper: add to rolling array
