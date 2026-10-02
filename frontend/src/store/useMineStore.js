@@ -5,10 +5,18 @@
  */
 import { create } from 'zustand';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || `http://${window.location.hostname}:3001`;
-const WS_URL      = BACKEND_URL.replace(/^http/, 'ws') + '/ws';
-const API_BASE    = BACKEND_URL + '/api';
-const HISTORY_MAX = 60;   // keep 60 data points per node for charts
+// If VITE_BACKEND_URL is set use it, otherwise use same hostname only on non-Vercel
+const _envBackend = import.meta.env.VITE_BACKEND_URL || '';
+const _isVercel   = window.location.hostname.includes('vercel.app');
+const BACKEND_URL = _envBackend
+  ? _envBackend
+  : _isVercel
+  ? ''   // no backend on Vercel unless explicitly set
+  : `http://${window.location.hostname}:3001`;
+
+const WS_URL   = BACKEND_URL ? BACKEND_URL.replace(/^https?/, BACKEND_URL.startsWith('https') ? 'wss' : 'ws') + '/ws' : '';
+const API_BASE = BACKEND_URL ? BACKEND_URL + '/api' : '/api';
+const HISTORY_MAX = 60;
 
 // Helper: add to rolling array
 function addToHistory(arr, val) {
@@ -70,6 +78,10 @@ const useMineStore = create((set, get) => ({
 
   connectWS() {
     if (get().wsRef) return;
+    if (!WS_URL) {
+      set({ wsStatus: 'offline' });
+      return;
+    }
     const ws = new WebSocket(WS_URL);
 
     ws.onopen = () => {
