@@ -105,7 +105,7 @@ const NAV_SECTIONS = [
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const [collapsed, setCollapsed] = useState(false);
   const activePage  = useMineStore(s => s.activePage);
   const setPage     = useMineStore(s => s.setActivePage);
@@ -121,7 +121,15 @@ export default function Sidebar() {
     items: sec.items.filter(item => item.roles.includes(role)),
   })).filter(sec => sec.items.length > 0);
 
-  const sidebarWidth = collapsed ? '3.75rem' : '14.5rem';
+  // On mobile always show full sidebar (not collapsed)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const sidebarWidth = (collapsed && !isMobile) ? '3.75rem' : '14.5rem';
+
+  // Wrap setPage to also close the mobile drawer
+  function handleNavClick(id) {
+    setPage(id);
+    if (onClose) onClose();
+  }
 
   return (
     <aside
@@ -129,6 +137,7 @@ export default function Sidebar() {
       style={{
         width: sidebarWidth,
         minWidth: sidebarWidth,
+        height: '100dvh',
         background: 'linear-gradient(180deg, #060a14 0%, #04070f 100%)',
         borderRight: '1px solid rgba(255,255,255,0.06)',
         zIndex: 10,
@@ -179,7 +188,7 @@ export default function Sidebar() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setPage(item.id)}
+                  onClick={() => handleNavClick(item.id)}
                   title={collapsed ? item.label : undefined}
                   className="relative flex items-center gap-2.5 transition-all duration-150 rounded-lg"
                   style={{
@@ -227,7 +236,7 @@ export default function Sidebar() {
       <div className="flex-shrink-0" style={{ borderTop:'1px solid rgba(255,255,255,0.06)' }}>
         {/* Profile button */}
         <button
-          onClick={() => setPage('profile')}
+          onClick={() => handleNavClick('profile')}
           className="w-full flex items-center gap-2 p-2.5 transition-all duration-150 rounded-lg mx-1"
           style={{ width:'calc(100% - 0.5rem)', color:'#64748b' }}
           onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='#cbd5e1'; }}
