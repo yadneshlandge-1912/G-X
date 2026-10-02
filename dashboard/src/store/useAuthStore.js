@@ -15,32 +15,6 @@
  */
 import { create } from 'zustand';
 
-// ─── Supabase login event logger ─────────────────────────────────────────────
-// Logs each login to Supabase so admins can see who logged in and when.
-// Fails silently — login still works even if Supabase is unreachable.
-async function logLoginToSupabase(user) {
-  try {
-    const SUPABASE_URL = import.meta.env.VITE_BACKEND_URL
-      ? import.meta.env.VITE_BACKEND_URL.replace('/api','').replace(':3001','')
-      : null;
-    // Use the backend API to log — avoids exposing Supabase keys in frontend
-    const apiBase = import.meta.env.VITE_BACKEND_URL
-      ? import.meta.env.VITE_BACKEND_URL
-      : `http://${window.location.hostname}:3001/api`;
-    await fetch(`${apiBase}/log-login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        username: user.username,
-        name:     user.name,
-        role:     user.role,
-        device:   navigator.userAgent.slice(0, 120),
-        logged_in_at: Date.now(),
-      }),
-    });
-  } catch (_) { /* silent fail */ }
-}
-
 // ─── Seed credentials ───────────────────────────────────────────────────────
 // In production replace with backend JWT auth. Passwords shown for demo only.
 const SEED_USERS = [
@@ -96,26 +70,17 @@ function loadUsers() {
   SEED_USERS.forEach(u => {
     if (!savedMap[u.id]) savedMap[u.id] = u;
   });
-  return Object.values(savedMap);
+  return Object.values(savedMap);x
 }
 
 // ─── Store ───────────────────────────────────────────────────────────────────
-// Auto-login as Admin — no login screen required
-const AUTO_LOGIN_USER = {
-  id: 'u10', role: 'admin', username: 'admin',
-  name: 'Admin Controller', badge: 'AD-001',
-  shift: 'All', section: 'ALL', nodeId: null,
-  phone: '9876543210', joined: '2023-01-01',
-  loginAt: Date.now(),
-};
-
 const useAuthStore = create((set, get) => ({
 
-  // ── Auth state — always logged in as admin ────────────
-  currentUser: AUTO_LOGIN_USER,
+  // ── Auth state ────────────────────────────────────────
+  currentUser: loadFromStorage('mg_user', null),
   authError:   null,
-  // Always go straight to app — no login screen
-  authStep: 'app',
+  // Restore to 'app' if a valid session exists in localStorage, else start at role_pick
+  authStep: loadFromStorage('mg_user', null) ? 'app' : 'role_pick',
 
   // ── Users list (admin-managed) ────────────────────────
   users: loadUsers(),
@@ -165,59 +130,22 @@ const useAuthStore = create((set, get) => ({
 
   setAuthStep(step) { set({ authStep: step, authError: null }); },
 
-  async login(username, password) {
-    // Try backend first — logs to Supabase and validates server-side
-    try {
-      const apiBase = import.meta.env.VITE_BACKEND_URL
-        ? import.meta.env.VITE_BACKEND_URL
-        : `http://${window.location.hostname}:3001/api`;
-
-      const res = await fetch(`${apiBase}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username.trim(),
-          password,
-          device: navigator.userAgent.slice(0, 120),
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const session = { ...data.user, loginAt: Date.now() };
-        saveToStorage('mg_user', session);
-        set({ currentUser: session, authError: null, authStep: 'app' });
-        get().pushNotification({
-          title: 'Login Successful',
-          message: `Welcome back, ${data.user.name}. Logged in as ${data.user.role}.`,
-          type: 'info',
-        });
-        return true;
-      } else {
-        // Backend returned 401
-        set({ authError: 'Invalid username or password. Please try again.' });
-        return false;
-      }
-    } catch (_) {
-      // Backend unreachable — fall back to local credentials
-      const users = get().users;
-      const user = users.find(u => u.username === username.trim() && u.password === password);
-      if (!user) {
-        set({ authError: 'Invalid username or password. Please try again.' });
-        return false;
-      }
-      const session = { ...user, loginAt: Date.now() };
-      saveToStorage('mg_user', session);
-      set({ currentUser: session, authError: null, authStep: 'app' });
-      // Log to Supabase in background
-      logLoginToSupabase(user);
-      get().pushNotification({
-        title: 'Login Successful',
-        message: `Welcome back, ${user.name}. Logged in as ${user.role}.`,
-        type: 'info',
-      });
-      return true;
+  login(username, password) {
+    const users = get().users;
+    const user = users.find(u => u.username === username && u.password === password);
+    if (!user) {
+      set({ authError: 'Invalid username or password. Please try again.' });
+      return false;
     }
+    const session = { ...user, loginAt: Date.now() };
+    saveToStorage('mg_user', session);
+    set({ currentUser: session, authError: null, authStep: 'app' });
+    get().pushNotification({
+      title: 'Login Successful',
+      message: `Welcome back, ${user.name}. Logged in as ${user.role}.`,
+      type: 'info',
+    });
+    return true;
   },
 
   logout() {
@@ -301,10 +229,7 @@ const useAuthStore = create((set, get) => ({
     const theme = get().theme === 'dark' ? 'light' : 'dark';
     saveToStorage('mg_theme', theme);
     set({ theme });
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.toggle('light-mode', theme === 'light');
-      document.documentElement.classList.toggle('dark', theme !== 'light');
-    }
+    document.documentElement.classList.toggle('light-mode', theme === 'light');
   },
 
   // ────────────────────────────────────────────────────────

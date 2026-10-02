@@ -227,7 +227,7 @@ class SupabaseSyncer:
             "temperature": raw.get("t"),
             "humidity":    raw.get("h"),
             "gas_ppm":     raw.get("gas"),
-            "rssi":        raw.get("rssi"),
+            "rssi":        int(raw.get("rssi", 0)) if raw.get("rssi") is not None else None,
             "snr":         raw.get("snr"),
             "sos":         1 if raw.get("sos") else 0,
             "tx_count":    raw.get("tx", 0),

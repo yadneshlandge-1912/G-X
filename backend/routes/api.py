@@ -294,3 +294,120 @@ async def get_thresholds(request: Request):
         status_code=503,
         content={"ok": False, "error": "Alert engine not initialised yet"},
     )
+
+
+# ── POST /api/log-login ────────────────────────────────────────────────────────
+class LoginEvent(BaseModel):
+    username:     str
+    name:         str | None = None
+    role:         str | None = None
+    device:       str | None = None
+    logged_in_at: int | None = None
+
+@router.post("/log-login")
+async def log_login(event: LoginEvent, request: Request):
+    """
+    Record a user login event to SQLite and Supabase.
+    Called by the frontend useAuthStore on every successful login.
+    """
+    import time
+    conn = db.get_conn()
+    # Ensure the login_events table exists
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS login_events (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            username     TEXT NOT NULL,
+            name         TEXT,
+            role         TEXT,
+            device       TEXT,
+            logged_in_at INTEGER NOT NULL,
+            created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+        )
+    """)
+    conn.execute(
+        "INSERT INTO login_events (username, name, role, device, logged_in_at) VALUES (?,?,?,?,?)",
+        (event.username, event.name, event.role, event.device, event.logged_in_at or int(time.time()*1000))
+    )
+    conn.commit()
+
+    # Push to Supabase if syncer is available
+    syncer = getattr(request.app.state, 'syncer', None)
+    if syncer and syncer.enabled:
+        try:
+            from supabase import create_client
+            from config import SUPABASE_URL, SUPABASE_KEY
+            client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            client.table('login_events').insert({
+                'username':     event.username,
+                'name':         event.name,
+                'role':         event.role,
+                'device':       (event.device or '')[:120],
+                'logged_in_at': event.logged_in_at or int(time.time()*1000),
+            }).execute()
+        except Exception as exc:
+            pass   # silent fail — login still works
+
+    return {"ok": True}
+
+
+# ── POST /api/auth/login ───────────────────────────────────────────────────────
+import hashlib
+
+# Hardcoded credentials as fallback (same as frontend seed)
+_LOCAL_USERS = {
+    'rajan.kumar':   {'password':'miner123',    'id':'u1',  'name':'Rajan Kumar',     'role':'miner',      'badge':'MN-001','shift':'Morning','section':'SEC-A','nodeId':1,   'phone':'9876543201','joined':'2024-01-10'},
+    'deepak.singh':  {'password':'miner456',    'id':'u2',  'name':'Deepak Singh',    'role':'miner',      'badge':'MN-002','shift':'Morning','section':'SEC-A','nodeId':2,   'phone':'9876543202','joined':'2024-02-15'},
+    'amit.verma':    {'password':'miner789',    'id':'u3',  'name':'Amit Verma',      'role':'miner',      'badge':'MN-003','shift':'Evening','section':'SEC-A','nodeId':3,   'phone':'9876543203','joined':'2024-03-20'},
+    'suresh.pal':    {'password':'miner321',    'id':'u4',  'name':'Suresh Pal',      'role':'miner',      'badge':'MN-004','shift':'Evening','section':'SEC-A','nodeId':4,   'phone':'9876543204','joined':'2024-04-05'},
+    'mohan.das':     {'password':'miner654',    'id':'u5',  'name':'Mohan Das',       'role':'miner',      'badge':'MN-005','shift':'Night',  'section':'SEC-A','nodeId':5,   'phone':'9876543205','joined':'2024-05-11'},
+    'vikas.sharma':  {'password':'super123',    'id':'u6',  'name':'Vikas Sharma',    'role':'supervisor', 'badge':'SV-001','shift':'Morning','section':'SEC-A','nodeId':None,'phone':'9876543206','joined':'2023-06-01'},
+    'priya.nair':    {'password':'super456',    'id':'u7',  'name':'Priya Nair',      'role':'supervisor', 'badge':'SV-002','shift':'Evening','section':'SEC-A','nodeId':None,'phone':'9876543207','joined':'2023-07-15'},
+    'arjun.rescue':  {'password':'rescue123',   'id':'u8',  'name':'Arjun Meena',     'role':'rescue',     'badge':'RS-001','shift':'On-Call','section':'SEC-A','nodeId':None,'phone':'9876543208','joined':'2023-08-20'},
+    'sunita.rescue': {'password':'rescue456',   'id':'u9',  'name':'Sunita Bose',     'role':'rescue',     'badge':'RS-002','shift':'On-Call','section':'SEC-A','nodeId':None,'phone':'9876543209','joined':'2023-09-01'},
+    'admin':         {'password':'admin@mine1', 'id':'u10', 'name':'Admin Controller','role':'admin',      'badge':'AD-001','shift':'All',    'section':'ALL',  'nodeId':None,'phone':'9876543210','joined':'2023-01-01'},
+}
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+    device:   str | None = None
+
+@router.post("/auth/login")
+async def auth_login(req: LoginRequest, request: Request):
+    """
+    Authenticate a user and log the login event to Supabase.
+    Returns user data on success, 401 on failure.
+    """
+    import time
+
+    username = req.username.strip().lower()
+    password = req.password
+
+    # Check credentials against local store
+    user = _LOCAL_USERS.get(username)
+    if not user or user['password'] != password:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    # Build response (exclude password)
+    user_data = {k: v for k, v in user.items() if k != 'password'}
+    user_data['username'] = username
+    user_data['loginAt'] = int(time.time() * 1000)
+
+    # Log to Supabase
+    syncer = getattr(request.app.state, 'syncer', None)
+    if syncer and syncer.enabled:
+        try:
+            from supabase import create_client
+            from config import SUPABASE_URL, SUPABASE_KEY
+            client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            client.table('login_events').insert({
+                'username':     username,
+                'name':         user['name'],
+                'role':         user['role'],
+                'device':       (req.device or '')[:120],
+                'logged_in_at': user_data['loginAt'],
+            }).execute()
+        except Exception:
+            pass   # silent fail — login still works without Supabase
+
+    return {"ok": True, "user": user_data}

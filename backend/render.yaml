@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: guardianx-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/status
+    envVars:
+      - key: SIMULATION_MODE
+        value: "true"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: DEVICE_ID
+        value: "RENDER-GW1"
+      - key: SUPABASE_SYNC_INTERVAL
+        value: "30"

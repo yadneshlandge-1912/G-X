@@ -124,9 +124,20 @@ function AppShell() {
 
   useEffect(() => { if (!wsRef) connectWS(); }, []);
 
+  // Theme change animation
+  const [themeFlash, setThemeFlash] = React.useState(false);
+  const prevTheme = React.useRef(theme);
+
   useEffect(() => {
     document.documentElement.classList.toggle('light-mode', theme === 'light');
     document.documentElement.classList.toggle('dark', theme !== 'light');
+    // Trigger flash animation on theme change
+    if (prevTheme.current !== theme) {
+      setThemeFlash(true);
+      const t = setTimeout(() => setThemeFlash(false), 500);
+      prevTheme.current = theme;
+      return () => clearTimeout(t);
+    }
   }, [theme]);
 
   useEffect(() => {
@@ -157,6 +168,18 @@ function AppShell() {
         minHeight: '-webkit-fill-available',
       }}
     >
+      {/* Theme change flash overlay */}
+      {themeFlash && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: theme === 'light' ? 'rgba(255,255,255,0.85)' : 'rgba(3,5,13,0.85)',
+            animation: 'themeFlash 0.5s ease forwards',
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+
       {/* ── Mobile sidebar overlay ── */}
       {mobileSidebarOpen && (
         <div

@@ -1460,3 +1460,21 @@ html.light-mode .font-mono.text-mine-dim { color: var(--text-dim) !important; }
   align-items: center;
   justify-content: center;
 }
+
+/* ─── Theme toggle flash animation ─────────────────────────────────────────── */
+@keyframes themeFlash {
+  0%   { opacity: 0.85; }
+  40%  { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+/* Smooth transition on all background/color changes for theme switching */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+}
+/* But don't slow down transforms/animations */
+button, a, [role="button"] {
+  transition-property: background-color, border-color, color, box-shadow, transform, opacity;
+}
