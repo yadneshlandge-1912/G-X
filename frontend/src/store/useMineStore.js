@@ -91,12 +91,15 @@ const useMineStore = create((set, get) => ({
 
     ws.onclose = () => {
       set({ wsStatus: 'disconnected', wsRef: null });
-      console.warn('[WS] Disconnected — retrying in 3s');
-      setTimeout(() => get().connectWS(), 3000);
+      console.warn('[WS] Disconnected — retrying in 5s');
+      // Only retry if a backend URL is configured
+      if (BACKEND_URL) {
+        setTimeout(() => get().connectWS(), 5000);
+      }
     };
 
     ws.onerror = () => {
-      set({ wsStatus: 'error' });
+      set({ wsStatus: 'offline' });
       ws.close();
     };
 
