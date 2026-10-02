@@ -166,53 +166,25 @@ const useAuthStore = create((set, get) => ({
   setAuthStep(step) { set({ authStep: step, authError: null }); },
 
   async login(username, password) {
-    // Try backend first — logs to Supabase and validates server-side
-    try {
-      const apiBase = import.meta.env.VITE_BACKEND_URL
-        ? import.meta.env.VITE_BACKEND_URL
-        : `http://${window.location.hostname}:3001/api`;
-
-      const res = await fetch(`${apiBase}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username.trim(),
-          password,
-          device: navigator.userAgent.slice(0, 120),
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const session = { ...data.user, loginAt: Date.now() };
-        saveToStorage('mg_user', session);
-        set({ currentUser: session, authError: null, authStep: 'app' });
-        get().pushNotification({
-          title: 'Login Successful',
-          message: `Welcome back, ${data.user.name}. Logged in as ${data.user.role}.`,
-          type: 'info',
-        });
-        return true;
-      } else {
-        // Backend returned 401
-        set({ authError: 'Invalid username or password. Please try again.' });
-        return false;
-      }
-    } catch (_) {
-      // Backend unreachable — fall back to local credentials
-      const users = get().users;
-      const user = users.find(u => u.username === username.trim() && u.password === password);
-      if (!user) {
-        set({ authError: 'Invalid username or password. Please try again.' });
-        return false;
-      }
-      const session = { ...user, loginAt: Date.now() };
-      saveToStorage('mg_user', session);
-      set({ currentUser: session, authError: null, authStep: 'app' });
-      // Log to Supabase in background
-      logLoginToSupabase(user);
-      get().pushNotification({
-        title: 'Login Successful',
+    // Always validate locally — fast, works offline, no backend dependency
+    const users = get().users;
+    const user = users.find(u => u.username === username.trim() && u.password === password);
+    if (!user) {
+      set({ authError: 'Invalid username or password. Please try again.' });
+      return false;
+    }
+    const session = { ...user, loginAt: Date.now() };
+    saveToStorage('mg_user', session);
+    set({ currentUser: session, authError: null, authStep: 'app' });
+    // Log to backend in background (non-blocking)
+    logLoginToSupabase(user);
+    get().pushNotification({
+      title: 'Login Successful',
+      message: `Welcome back, ${user.name}. Logged in as ${user.role}.`,
+      type: 'info',
+    });
+    return true;
+  },
         message: `Welcome back, ${user.name}. Logged in as ${user.role}.`,
         type: 'info',
       });
